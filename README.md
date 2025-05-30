@@ -16,10 +16,16 @@ So, all wav-files are read and then put to suitable notes for currently two samp
 sequence.cpp contains array named "sequence" which is used to sequence the samples for testing purposes. Format is simple: array of structs that have 16th note tick when it happens, "true" or "false" for note to be played or stopped, midi note for that, and "true" for staccato and "false" for normal looping sample. And there are separate variables for tempo and sequence length. If the ticks when the sequence events happent aren't in numerical order, it breaks, sorry.
 
 TODO:
+
     - Use more modern C++ features, there are too many for-loops in cases where fancier solutions are available.
+
     - I'm currently mostly proficient in writing TypeScript, there are probably stupid number types used here, it takes a while to get used to that there isn't just one "Number" -type that covers everything.
+  
     - The wav-reader is quite naive implementation and could find locations of the different chunks.
     - Speaking of chunks, it now only reads Format, Data and Sample chunks. Instrument chunk could be useful, or even Cue chunk to have multiple samples in one wav-file.
+  
     - Better handling of keeping output signal in suitable range, some better limiter and volume handling so that peaks when playing chords don't get distorted.
+  
     - As I want this to also work as a metal-guitar-in-a-box in my modular synth, output needs somekind of guitar amp and speaker modeling.
+  
     - Better handling of errors and edge cases. With hardware sampler without display showing errors as text isn't that useful, so maybe having some kind of synthesized voice (or just samples...) reading out the errors in the audio output?
