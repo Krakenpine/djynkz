@@ -11,13 +11,15 @@
 #include "Note.h"
 #include "NoteContainer.h"
 #include "smplWriter.cpp"
+#include "LowPassFilter.h"
+#include "Distortion.h"
+#include "CabinetModeler.h"
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
     if (!(argc == 2 || argc == 6)) {
         cout << "Use djynkz.exe 'path' for normal function or djynkz.exe 'path' 'filename' 'midinote' 'looppoint' 'looptype' to add smpl chunk to file" << endl;
-        return 0;
     }
 
     const string sampleDirectory = argv[1];
@@ -46,7 +48,7 @@ int main(int argc, char *argv[]) {
     
     size_t ramIndex = 0;
     for (size_t i = 0; i < files.size(); i++) {
-        WavReader wavReader(files[i]);
+        WavReader wavReader(files[i], false);
         cout << "Buffer size: " << wavReader.getBufferSize() << endl;
 
         for (size_t i = 0; i < wavReader.getBufferSize(); i++) {
@@ -107,6 +109,13 @@ int main(int argc, char *argv[]) {
     int sequenceIndex = 0;
     int sampleCounter = 0;
     int tick = 0;
+
+    LowPassFilter lpf1(1000, samplerate);
+    LowPassFilter lpf2(1000, samplerate);
+    LowPassFilter lpf3(1000, samplerate);
+    LowPassFilter lpf4(100, samplerate);
+    LowPassFilter lpf5(4000, samplerate);
+    LowPassFilter lpf6(6000, samplerate);
     
     while (tick <= seqLength) {
         if (sampleCounter % samples_per_sixteenth == 0) {
@@ -143,14 +152,12 @@ int main(int argc, char *argv[]) {
         sampleCounter++; 
         float sample = float(sampler.getAudio()) / 32767.0f + float(samplerStac.getAudio()) / 32767.0f;
 
-        sample *= 1.0f;
-
         // fast tanh for soft clipping and limiting signal, crude but sounds better than over- or underflowing integer
         if (sample < -3.f) { sample = -1.f; }
         else if (sample > 3.f) { sample = 1.f; }
         else { sample = sample * (27.f + sample*sample) / (27.f + sample * sample * 9.f); }
 
-        outputSamples.push_back(sample * 0.80);
+        outputSamples.push_back(sample);
     }
 
     vector<int16_t> outputSamplesInt; 
@@ -162,5 +169,52 @@ int main(int argc, char *argv[]) {
     WavWriter writer("newWave.wav", 1, 48000, 16, outputSamplesInt, outputSamplesInt.size());
     writer.WriteFile();
 
+
+    // Distortion
+
+    Distortion distortion(samplerate);
+    distortion.setType(METALZONE);
+    distortion.setGain(60);
+
+    vector<float> outputSamplesDist;
+
+    for (size_t i = 0; i < outputSamples.size(); i++) {
+        outputSamplesDist.push_back(distortion.processSample(outputSamples[i]));
+    }
+
+    vector<int16_t> outputSamplesDistInt; 
+
+    for (size_t i = 0; i < outputSamplesDist.size(); i++) {
+        outputSamplesDistInt.push_back(static_cast<int16_t>(outputSamplesDist[i] * 32767));
+    }
+
+    WavWriter writerDist("dist.wav", 1, 48000, 16, outputSamplesDistInt, outputSamplesDistInt.size());
+    writerDist.WriteFile();
+
+
+    // Convolution
+
+    CabinetModeler cabinet(samplerate);
+    cabinet.setType(FOURxTWELVE_SM57);
+
+    vector<float> outputSamplesConvolution;
+
+    for (size_t i = 0; i < outputSamplesDist.size(); i++) {
+        outputSamplesConvolution.push_back(cabinet.processSample(outputSamplesDist[i]));
+    }
+
+    cout << "largest sample: " << cabinet.getLargestSample() << endl;
+
+    vector<int16_t> outputSamplesIntConv; 
+
+    for (size_t i = 0; i < outputSamplesConvolution.size(); i++) {
+        float tempsample = outputSamplesConvolution[i]*(32000.0f / cabinet.getLargestSample());
+        outputSamplesIntConv.push_back(static_cast<int16_t>(tempsample));
+    }
+
+    WavWriter IRwriter("IR.wav", 1, samplerate, 16, outputSamplesIntConv, outputSamplesIntConv.size());
+    IRwriter.WriteFile();
+
+
     return 1;
-}
+} 

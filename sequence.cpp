@@ -10,11 +10,11 @@ struct SeqEvent {
 int tempo = 220;
 int seqLength = 80;
 
-SeqEvent sequence2[] = {
+SeqEvent sequence[] = {
     {0,  true,  40, true}, // 0 x x x x x
-    {2,  false, 40, true}, // x
+    {1,  false, 40, true}, // x
     {2,  true,  40, true}, // 0 x x x x x
-    {4,  false, 40, true}, // x
+    {3,  false, 40, true}, // x
     {4,  true,  52, false}, // x 7 x x x x
     {6,  false, 52, false}, // x
     {6,  true,  40, true}, // 0 x x x x x 
@@ -71,11 +71,11 @@ SeqEvent sequence2[] = {
     {64, false, 46, false}
 };
 
-SeqEvent sequence[] = {
+SeqEvent sequence3[] = {
     {0,  true,  33, true}, // 0 x x x x x
-    {2,  false, 33, true}, // x
+    {1,  false, 33, true}, // x
     {2,  true,  33, true}, // 0 x x x x x
-    {4,  false, 33, true}, // x
+    {3,  false, 33, true}, // x
     {4,  true,  45, false}, // x 7 x x x x
     {6,  false, 45, false}, // x
     {6,  true,  33, true}, // 0 x x x x x 

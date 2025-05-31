@@ -24,7 +24,7 @@ private:
 
 
 public:
-    WavReader(std::string filename);
+    WavReader(std::string filename, bool skipSmpl);
     ~WavReader();
 
     bool open();
