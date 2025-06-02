@@ -19,6 +19,11 @@ float LowPassFilter::processSample(float input) {
     return output;
 }
 
+void LowPassFilter::setSampleRate(float samplerate_) {
+    samplerate = samplerate_;
+    x = tanf(M_PI * cutOffFrequency / samplerate);
+}
+
 void LowPassFilter::setCutOffFrequency(float cutOffFrequency_) {
     cutOffFrequency = cutOffFrequency_;
     x = tanf(M_PI * cutOffFrequency / samplerate);

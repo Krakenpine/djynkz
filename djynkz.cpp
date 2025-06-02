@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         cout << "Use djynkz.exe 'path' for normal function or djynkz.exe 'path' 'filename' 'midinote' 'looppoint' 'looptype' to add smpl chunk to file" << endl;
     }
 
-    const string sampleDirectory = argv[1];
+    const string sampleDirectory = "E:/koodaus/djynkz/samplet"; // argv[1];
 
     cout << sampleDirectory << endl;
 
@@ -109,13 +109,6 @@ int main(int argc, char *argv[]) {
     int sequenceIndex = 0;
     int sampleCounter = 0;
     int tick = 0;
-
-    LowPassFilter lpf1(1000, samplerate);
-    LowPassFilter lpf2(1000, samplerate);
-    LowPassFilter lpf3(1000, samplerate);
-    LowPassFilter lpf4(100, samplerate);
-    LowPassFilter lpf5(4000, samplerate);
-    LowPassFilter lpf6(6000, samplerate);
     
     while (tick <= seqLength) {
         if (sampleCounter % samples_per_sixteenth == 0) {
@@ -215,6 +208,7 @@ int main(int argc, char *argv[]) {
     WavWriter IRwriter("IR.wav", 1, samplerate, 16, outputSamplesIntConv, outputSamplesIntConv.size());
     IRwriter.WriteFile();
 
+    cout << "It has been written!" << endl;
 
-    return 1;
-} 
+    return 1; 
+}

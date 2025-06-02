@@ -14,6 +14,7 @@ class LowPassFilter {
         LowPassFilter(float cutOffFrequency_, float samplerate_);
         float processSample(float input);
 
+        void setSampleRate(float samplerate_);
         void setCutOffFrequency(float cutOffFrequency_);
 };
 

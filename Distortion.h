@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "LowPassFilter.h"
+#include "MetalZone.h"
 
 enum Type {
     RAW,
@@ -24,6 +25,8 @@ class Distortion {
         float eq3Gain = 1.0f;
         std::vector<LowPassFilter> filters;
         float samplerate = 48000;
+
+        MetalZone metalzone;
 
         float processRaw(float input);
         float processClean(float input);

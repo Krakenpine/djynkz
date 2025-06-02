@@ -9,17 +9,11 @@ Distortion::Distortion(float samplerate_) {
     LowPassFilter eq2(1000, samplerate_);
     LowPassFilter eq3(1000, samplerate_);
     samplerate = samplerate_;
+    MetalZone metalzone(samplerate);
 }
 
 void Distortion::setType(Type type_) {
     type = type_;
-    filters.clear();
-            LowPassFilter lpf1(1000, samplerate);
-            LowPassFilter lpf2(1000, samplerate);
-            LowPassFilter lpf3(1000, samplerate);
-            LowPassFilter lpf4(100, samplerate);
-            LowPassFilter lpf5(4000, samplerate);
-            LowPassFilter lpf6(6000, samplerate);
     switch (type) {
         case RAW:
             break;
@@ -28,12 +22,7 @@ void Distortion::setType(Type type_) {
         case HARDCLIP:
             break;
         case METALZONE:
-            filters.push_back(lpf1);
-            filters.push_back(lpf2);
-            filters.push_back(lpf3);
-            filters.push_back(lpf4);
-            filters.push_back(lpf5);
-            filters.push_back(lpf6);
+            metalzone.setSamplerate(samplerate);
             break;
         case WAVEFOLDER:
             break;
@@ -70,7 +59,7 @@ float Distortion::processSample(float input) {
         case HARDCLIP:
             return processHardClip(input);
         case METALZONE:
-            return processMetalZone(input);
+            return metalzone.processSample(input, gain);
         case WAVEFOLDER:
             return processWavefolder(input);
         default:
@@ -87,26 +76,6 @@ float Distortion::processClean(float input) {
     if (sample < -3.f) { sample = -1.f; }
     else if (sample > 3.f) { sample = 1.f; }
     else { sample = sample * (27.f + sample*sample) / (27.f + sample * sample * 9.f); }
-    return sample;
-}
-
-float Distortion::processMetalZone(float input) {
-    float sample = input;
-
-    sample = sample - filters[0].processSample(sample);
-    sample = filters[1].processSample(sample);
-    sample = filters[2].processSample(sample);
-
-    sample = sample * gain * 200.0f;
-
-    if (sample < -3.f) { sample = -1.f; }
-    else if (sample > 3.f) { sample = 1.f; }
-    else { sample = sample * (27.f + sample*sample) / (27.f + sample * sample * 9.f); }
-
-    sample = 0.2f * sample + 0.8f * filters[3].processSample(sample);
-    sample = sample - filters[4].processSample(sample) * 0.4f;
-    sample = filters[5].processSample(sample);
-
     return sample;
 }
 
