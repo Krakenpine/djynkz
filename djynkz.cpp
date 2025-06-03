@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
         std::cout << "Use djynkz.exe 'path' for normal function or djynkz.exe 'path' 'filename' 'midinote' 'looppoint' 'looptype' to add smpl chunk to file" << endl;
     }
 
-    const string sampleDirectory = "E:/koodaus/djynkz/samplet"; // argv[1];
+    const string sampleDirectory = argv[1];
 
     std::cout << sampleDirectory << endl;
 
