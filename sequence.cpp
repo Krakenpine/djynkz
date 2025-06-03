@@ -7,10 +7,90 @@ struct SeqEvent {
     bool stac;
 };
 
-int tempo = 220;
+int tempo = 100;
 int seqLength = 80;
 
-SeqEvent sequence[] = {
+
+SeqEvent sequence666[] = {
+    {0,  true,  33, false},
+    {0,  true,  40, false},
+    {0,  true,  45, false},
+    {80,  false, 33, false},
+    {80,  false, 40, false},
+    {80,  false, 45, false}
+};
+
+SeqEvent sequence125[] = {
+    {0,  true,  33, false},
+    {0,  true,  40, false},
+    {0,  true,  45, false},
+    {8,  false, 33, false},
+    {8,  false, 40, false},
+    {8,  false, 45, false},
+
+    {8,  true,  35, false},
+    {8,  true,  42, false},
+    {8,  true,  47, false},
+    {16, false, 35, false},
+    {16, false, 42, false},
+    {16, false, 47, false},
+
+    {16, true,  33, false},
+    {16, true,  40, false},
+    {16, true,  45, false},
+    {24, false, 33, false},
+    {24, false, 40, false},
+    {24, false, 45, false},
+
+    {24, true,  36, false},
+    {24, true,  43, false},
+    {24, true,  48, false},
+    {28, false, 36, false},
+    {28, false, 43, false},
+    {28, false, 48, false},
+
+    {28, true,  33, true},
+    {28, true,  40, true},
+    {28, true,  45, true},
+    {30, false, 33, true},
+    {30, false, 40, true},
+    {30, false, 45, true},
+
+    {30, true,  33, true},
+    {30, true,  40, true},
+    {30, true,  45, true},
+    {32, false, 33, true},
+    {32, false, 40, true},
+    {32, false, 45, true},
+
+    {32, true,  33, false},
+    {32, true,  40, false},
+    {32, true,  45, false},
+    {40, false, 33, false},
+    {40, false, 40, false},
+    {40, false, 45, false},
+
+    {40, true,  35, false},
+    {40, true,  42, false},
+    {40, true,  47, false},
+    {48, false, 35, false},
+    {48, false, 42, false},
+    {48, false, 47, false},
+
+    {48, true,  33, false},
+    {48, true,  40, false},
+    {48, true,  45, false},
+    {56, false, 33, false},
+    {56, false, 40, false},
+    {56, false, 45, false},
+
+    {56, true,  48, false},
+    {60, false, 48, false},
+    {60, true,  47, false},
+    {64, false, 47, false}
+};
+
+SeqEvent sequence6[] = {
     {0,  true,  40, true}, // 0 x x x x x
     {1,  false, 40, true}, // x
     {2,  true,  40, true}, // 0 x x x x x

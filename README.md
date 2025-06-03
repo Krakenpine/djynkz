@@ -15,11 +15,15 @@ So, all wav-files are read and then put to suitable notes for currently two samp
 
 sequence.cpp contains array named "sequence" which is used to sequence the samples for testing purposes. Format is simple: array of structs that have 16th note tick when it happens, "true" or "false" for note to be played or stopped, midi note for that, and "true" for staccato and "false" for normal looping sample. And there are separate variables for tempo and sequence length. If the ticks when the sequence events happent aren't in numerical order, it breaks, sorry.
 
+There is distortion engine and IR-based cabinet emulation for guitar sounds. In convolution the IR-sample can be stretched or shortened for different sounds. There is morphing function to slide between to different IR-samples. It basically creates an array of constant length vectors that follow the curves of the IR-sample and creates a 2D-matrix of it. The it can weighted average of two IR-samples in 2D-space and then convert it back to 1D-sample which can be used in the convolution. Idea here was to morph between IR-samples instead of just crossfading between them normally. Normal crossfade could introduce phase cancellations and this could give unique sound. In practice I didn't hear much difference between normal crossfading and this overly complicated 2D-morping.
+
 TODO:
 - Use more modern C++ features, there are too many for-loops in cases where fancier solutions are available.
 - I'm currently mostly proficient in writing TypeScript, there are probably stupid number types used here, it takes a while to get used to that there isn't just one "Number" -type that covers everything.
 - The wav-reader is quite naive implementation and could find locations of the different chunks.
 - Speaking of chunks, it now only reads Format, Data and Sample chunks. Instrument chunk could be useful, or even Cue chunk to have multiple samples in one wav-file.
 - Better handling of keeping output signal in suitable range, some better limiter and volume handling so that peaks when playing chords don't get distorted.
-- As I want this to also work as a metal-guitar-in-a-box in my modular synth, output needs somekind of guitar amp and speaker modeling.
+- As I want this to also work as a metal-guitar-in-a-box in my modular synth, output needs somekind of guitar amp and speaker modeling. Update: work in progress.
 - Better handling of errors and edge cases. With hardware sampler without display showing errors as text isn't that useful, so maybe having some kind of synthesized voice (or just samples...) reading out the errors in the audio output?
+- Especially hard clipping is extremely aliasing, need to implement some kind of oversampling. There is rudimentary FIR-implementation that could be used, but it needs work.
+- Convolution and especially this IR-sample-morphing are extremely processor-intensive operations, using microcontroller for them can be problematic. Shortening IR-samples reduces load exponentially. Needs studying.

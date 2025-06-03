@@ -9,7 +9,9 @@ NoteContainer.cpp \
 LowPassFilter.cpp \
 Distortion.cpp \
 CabinetModeler.cpp \
-MetalZone.cpp
+MetalZone.cpp \
+FIR.cpp \
+Morpher.cpp
 OBJS = $(SRCS:.cpp=.o)
 TARGET = djynkz.exe
 

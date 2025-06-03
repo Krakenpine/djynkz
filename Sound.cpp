@@ -19,7 +19,7 @@ Sound::~Sound() {
     // No dynamic memory allocation, so nothing to clean up
 }
 
-void Sound::addData(uint16_t* data_, int size, int samplerate_, int hardwareSamplerate, int midiNote_, bool loopable) {
+void Sound::addData(uint16_t* data_, int size, int samplerate_, int hardwareSamplerate, int midiNote_, bool loopable, int loopPoint_) {
     if (data_ == nullptr || size <= 0) {
         cerr << "Invalid data or size." << endl;
         return;
@@ -36,6 +36,7 @@ void Sound::addData(uint16_t* data_, int size, int samplerate_, int hardwareSamp
 
     hasLoopFlag = loopable;
     isStaccato = !loopable;
+    loopPoint = loopPoint_;
 
     cout << midiNote << " " << initFrequency << " " << samplerate_ << " " << hardwareSamplerate << endl;
 
@@ -132,4 +133,8 @@ int Sound::getMidiNote() {
 
 bool Sound::getIsStaccato() {
     return isStaccato;
+}
+
+int Sound::getLoopPoint() {
+    return loopPoint;
 }

@@ -5,12 +5,20 @@ MetalZone::MetalZone() {}
 
 MetalZone::MetalZone(float samplerate_) {
     samplerate = samplerate_;
-    LowPassFilter lpf1(1001, samplerate);
-    LowPassFilter lpf2(1002, samplerate);
-    LowPassFilter lpf3(1003, samplerate);
-    LowPassFilter lpf4(104, samplerate);
-    LowPassFilter lpf5(4005, samplerate);
-    LowPassFilter lpf6(6006, samplerate);
+
+    lpf1.setSampleRate(samplerate);
+    lpf2.setSampleRate(samplerate);
+    lpf3.setSampleRate(samplerate);
+    lpf4.setSampleRate(samplerate);
+    lpf5.setSampleRate(samplerate);
+    lpf6.setSampleRate(samplerate);
+
+    lpf1.setCutOffFrequency(1001);
+    lpf2.setCutOffFrequency(1002);
+    lpf3.setCutOffFrequency(1003);
+    lpf4.setCutOffFrequency(104);
+    lpf5.setCutOffFrequency(4005);
+    lpf6.setCutOffFrequency(6006);
 }
 
 float MetalZone::processSample(float input, float gain) {
@@ -20,7 +28,7 @@ float MetalZone::processSample(float input, float gain) {
     sample = lpf2.processSample(sample);
     sample = lpf3.processSample(sample);
 
-    sample = sample * gain * 200.0f;
+    sample = sample * gain * 1.0f;
 
     if (sample < -3.f) { sample = -1.f; }
     else if (sample > 3.f) { sample = 1.f; }

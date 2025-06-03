@@ -4,6 +4,7 @@
 #include <vector>
 #include "LowPassFilter.h"
 #include "MetalZone.h"
+#include "FIR.h"
 
 enum Type {
     RAW,
@@ -17,16 +18,22 @@ class Distortion {
     private:
         Type type = RAW;
         float gain = 1.0f;
+        LowPassFilter preEq;
         LowPassFilter eq1;
         LowPassFilter eq2;
         LowPassFilter eq3;
         float eq1Gain = 1.0f;
         float eq2Gain = 1.0f;
         float eq3Gain = 1.0f;
-        std::vector<LowPassFilter> filters;
+
         float samplerate = 48000;
 
         MetalZone metalzone;
+
+        FIR fir;
+        FIR firpre;
+
+        int oversample = 1;
 
         float processRaw(float input);
         float processClean(float input);
@@ -42,6 +49,7 @@ class Distortion {
         void setSamplerate(float samplerate_);
 
         float processSample(float input);
+        float getLargestFirSample();
 };
 
 #endif // DISTORTION_H

@@ -5,11 +5,23 @@
 #define M_PI 3.14159265358979323846
 
 Distortion::Distortion(float samplerate_) {
-    LowPassFilter eq1(1000, samplerate_);
-    LowPassFilter eq2(1000, samplerate_);
-    LowPassFilter eq3(1000, samplerate_);
     samplerate = samplerate_;
-    MetalZone metalzone(samplerate);
+    oversample = 1;
+    preEq.setSampleRate(samplerate * oversample);
+    preEq.setCutOffFrequency(20);
+    eq1.setSampleRate(samplerate);
+    eq1.setCutOffFrequency(1000);
+    eq2.setSampleRate(samplerate);
+    eq2.setCutOffFrequency(1000);
+    eq3.setSampleRate(samplerate);
+    eq3.setCutOffFrequency(1000);
+
+    MetalZone metalzone(samplerate * oversample);
+    FIR fir2(samplerate * oversample);
+    fir = fir2;
+    FIR fir3(samplerate * oversample);
+    firpre = fir3;
+
 }
 
 void Distortion::setType(Type type_) {
@@ -17,12 +29,12 @@ void Distortion::setType(Type type_) {
     switch (type) {
         case RAW:
             break;
-        case CLEAN:
+        case CLEAN: 
             break;
         case HARDCLIP:
             break;
         case METALZONE:
-            metalzone.setSamplerate(samplerate);
+            metalzone.setSamplerate(samplerate * oversample);
             break;
         case WAVEFOLDER:
             break;
@@ -51,20 +63,34 @@ void Distortion::setEq(int eq, float eqFreq, float eqGain) {
 }
 
 float Distortion::processSample(float input) {
+    float output = 0;
+
+    
+    float sample = input - preEq.processSample(input);
+
+    std::vector<float> outbuf;
+        
     switch (type) {
         case RAW:
-            return processRaw(input);
+            outbuf.push_back(processRaw(sample));
+            break;
         case CLEAN:
-            return processClean(input);
+            outbuf.push_back(processClean(sample));
+            break;
         case HARDCLIP:
-            return processHardClip(input);
+            outbuf.push_back(processHardClip(sample));
+            break;
         case METALZONE:
-            return metalzone.processSample(input, gain);
+            outbuf.push_back(metalzone.processSample(sample, gain));
+            break;
         case WAVEFOLDER:
-            return processWavefolder(input);
+            outbuf.push_back(processWavefolder(sample));
+            break;
         default:
-            return input;
+            outbuf.push_back(sample);
     }
+
+    return outbuf[0];
 }
 
 float Distortion::processRaw(float input) {
@@ -119,4 +145,8 @@ float Distortion::processWavefolder(float input) {
     sample *= polarity;
 
     return sample;
+}
+
+float Distortion::getLargestFirSample() {
+    return fir.getLargestSample();
 }

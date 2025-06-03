@@ -46,6 +46,7 @@ public:
     size_t getBufferSize() const;
 
     int getSample(size_t index) const;
+    float getSampleFloat(size_t index);
 };
 
 #endif // _WAV_READER_H

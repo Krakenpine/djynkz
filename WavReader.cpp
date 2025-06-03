@@ -185,3 +185,13 @@ int WavReader::getSample(size_t index) const {
     }
     return buffer[index];
 };
+
+float WavReader::getSampleFloat(size_t index) {
+    if (index < 0 || index >= buffer.size()) {
+        cerr << "Index out of bounds: " << index << endl;
+        return 0; // or throw an exception
+    }
+    float output = buffer[index];
+    output /= 32767.0f;
+    return buffer[index];
+};

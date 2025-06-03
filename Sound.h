@@ -38,7 +38,7 @@ public:
 
     bool getIsPlaying();
 
-    void addData(uint16_t* data_, int size, int samplerate_, int hardwareSamplerate, int midiNote_, bool loopable);
+    void addData(uint16_t* data_, int size, int samplerate_, int hardwareSamplerate, int midiNote_, bool loopable, int loopPoint_);
     void setReadPosition(float readPosition_);
     void setPlayFrequency(float playFrequency_);
     void setLoopPoint(int loopPoint_);
@@ -51,6 +51,8 @@ public:
     void stopNote();
 
     bool getIsStaccato();
+
+    int getLoopPoint();
 };
 
 #endif // _SOUND_H
