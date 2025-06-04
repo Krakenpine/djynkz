@@ -18,8 +18,8 @@ private:
     uint16_t* data;
     float initFrequency;
     float playFrequency;
-    float delta;
-    float readPosition;
+    double delta;
+    double readPosition;
     bool isPlaying;
 
 public:

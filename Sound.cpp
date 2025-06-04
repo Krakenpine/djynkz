@@ -70,8 +70,8 @@ int Sound::getNextSample() {
         }
     }
 
-    float whole = floor(readPosition);
-    float decimal = readPosition - whole;
+    double whole = floor(readPosition);
+    double decimal = readPosition - whole;
 
     float lower_sample = static_cast<int16_t>(data[static_cast<int>(whole)]);            
     float upper_sample;
