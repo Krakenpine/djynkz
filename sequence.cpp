@@ -12,12 +12,8 @@ int seqLength = 80;
 
 
 SeqEvent sequence666[] = {
-    {0,  true,  33, false},
-    {0,  true,  40, false},
-    {0,  true,  45, false},
-    {80,  false, 33, false},
-    {80,  false, 40, false},
-    {80,  false, 45, false}
+    {0,  true,  50, false},
+    {80,  false, 50, false}
 };
 
 SeqEvent sequence125[] = {

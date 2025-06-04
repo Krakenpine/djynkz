@@ -4,9 +4,9 @@
 
 #define M_PI 3.14159265358979323846
 
-Distortion::Distortion(float samplerate_) {
+Distortion::Distortion(float samplerate_, int oversample_) {
     samplerate = samplerate_;
-    oversample = 1;
+    oversample = oversample_;
     preEq.setSampleRate(samplerate * oversample);
     preEq.setCutOffFrequency(20);
     eq1.setSampleRate(samplerate);
@@ -17,11 +17,10 @@ Distortion::Distortion(float samplerate_) {
     eq3.setCutOffFrequency(1000);
 
     MetalZone metalzone(samplerate * oversample);
-    FIR fir2(samplerate * oversample);
-    fir = fir2;
-    FIR fir3(samplerate * oversample);
-    firpre = fir3;
-
+    firpre.setSamplerate(samplerate);
+    firpre.setOversampling(oversample);
+    fir.setSamplerate(samplerate);
+    fir.setOversampling(oversample);
 }
 
 void Distortion::setType(Type type_) {
@@ -69,25 +68,40 @@ float Distortion::processSample(float input) {
     float sample = input - preEq.processSample(input);
 
     std::vector<float> outbuf;
+
+    for (int i = 0; i < oversample; i++) {
         
-    switch (type) {
-        case RAW:
-            outbuf.push_back(processRaw(sample));
-            break;
-        case CLEAN:
-            outbuf.push_back(processClean(sample));
-            break;
-        case HARDCLIP:
-            outbuf.push_back(processHardClip(sample));
-            break;
-        case METALZONE:
-            outbuf.push_back(metalzone.processSample(sample, gain));
-            break;
-        case WAVEFOLDER:
-            outbuf.push_back(processWavefolder(sample));
-            break;
-        default:
-            outbuf.push_back(sample);
+        if (i != 0) {
+            sample = 0;
+        }
+
+        sample = firpre.processSample(sample);
+
+        switch (type) {
+            case RAW:
+                sample = processRaw(sample);
+                break;
+            case CLEAN:
+                sample = processClean(sample);
+                break;
+            case HARDCLIP:
+                sample = processHardClip(sample);
+                break;
+            case METALZONE:
+                sample = metalzone.processSample(sample, gain);
+                break;
+            case WAVEFOLDER:
+                sample = processWavefolder(sample);
+                break;
+        }
+
+        sample = fir.processSample(sample) * 0.5;
+
+        outbuf.push_back(sample);
+    }
+
+    for (int i = 0; i < oversample; i++) {
+        output += outbuf[i];
     }
 
     return outbuf[0];

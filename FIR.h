@@ -11,6 +11,7 @@ class FIR {
         std::vector<float> FIRbuffer;
         size_t FIRbufferIndex = 0;
         float largestSample = 0;
+        int oversampling = 1;
 
     public:
         FIR();
@@ -20,6 +21,7 @@ class FIR {
         float processSample(float input);
 
         float getLargestSample();
+        void setOversampling(int oversampling_);
 };
 
 #endif // FIR_H

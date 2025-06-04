@@ -25,5 +25,5 @@ TODO:
 - Better handling of keeping output signal in suitable range, some better limiter and volume handling so that peaks when playing chords don't get distorted.
 - As I want this to also work as a metal-guitar-in-a-box in my modular synth, output needs somekind of guitar amp and speaker modeling. Update: work in progress.
 - Better handling of errors and edge cases. With hardware sampler without display showing errors as text isn't that useful, so maybe having some kind of synthesized voice (or just samples...) reading out the errors in the audio output?
-- Especially hard clipping is extremely aliasing, need to implement some kind of oversampling. There is rudimentary FIR-implementation that could be used, but it needs work.
+- Especially hard clipping is extremely aliasing, need to implement some kind of oversampling. There is implementation, needs testing if it works correctly. FIR-filters can be optimized for speedier performance in this case with some mathemancy
 - Convolution and especially this IR-sample-morphing are extremely processor-intensive operations, using microcontroller for them can be problematic. Shortening IR-samples reduces load exponentially. Needs studying.

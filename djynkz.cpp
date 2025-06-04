@@ -167,9 +167,9 @@ int main(int argc, char *argv[]) {
 
     // Distortion 
 
-    Distortion distortion(samplerate);
-    distortion.setType(HARDCLIP);
-    distortion.setGain(30);
+    Distortion distortion(samplerate, 1); 
+    distortion.setType(METALZONE);
+    distortion.setGain(300);
 
     vector<float> outputSamplesDist;
 
@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
         
         if (i % 48000 == 0) {
             std::cout << "dist sample: " << i << " of " << outputSamples.size() << " processed" << endl;
-        }
+        } 
     }
 
     vector<int16_t> outputSamplesDistInt; 
@@ -192,13 +192,13 @@ int main(int argc, char *argv[]) {
 
     // Convolution
 
-    CabinetModeler cabinet1(samplerate);
+    CabinetModeler cabinet1(samplerate); 
 
     cabinet1.setType(FOURxTWELVE_SM57);
     
 
     CabinetModeler cabinet2(samplerate);
-    cabinet2.setType(MOTOWN);
+    cabinet2.setType(MOTOWN); 
     
 
     vector<float> outputSamplesConvolution;
@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
 
         WavWriter morphWriter("morph_" + std::to_string(i) + ".wav", 1, samplerate, 16, morphInt, morphInt.size() );
 
-        morphWriter.WriteFile();
+        morphWriter.WriteFile(); 
     }
 
     CabinetModeler cabinetMorph(samplerate);
@@ -250,8 +250,8 @@ int main(int argc, char *argv[]) {
         float weight = float(i) / size;
 
 
-        morpher.calculateMorphed(weight);
-        cabinetMorph.setIR(morpher.getMorphedIR());
+        //morpher.calculateMorphed(weight);
+        //cabinetMorph.setIR(morpher.getMorphedIR());
 
         cabinetMorph.setSpeed(1);
         outputSamplesConvolution.push_back(cabinetMorph.processSample(outputSamplesDist[i]));

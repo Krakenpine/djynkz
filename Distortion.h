@@ -30,8 +30,8 @@ class Distortion {
 
         MetalZone metalzone;
 
-        FIR fir;
         FIR firpre;
+        FIR fir;
 
         int oversample = 1;
 
@@ -42,7 +42,7 @@ class Distortion {
         float processWavefolder(float input);
 
     public:
-        Distortion(float samplerate_);
+        Distortion(float samplerate_, int oversample_);
         void setType(Type type_);
         void setGain(float gain_);
         void setEq(int eq, float eqFreq, float eqGain);
