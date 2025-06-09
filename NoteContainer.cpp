@@ -3,13 +3,11 @@
 #include "Sound.h"
 #include <vector>
 
-NoteContainer::NoteContainer() {
+NoteContainer::NoteContainer() : notes(128) {
     for (int i = 0; i < 128; i++) {
-        Note note(std::to_string(i));
-        notes.push_back(note);
+        notes[i] = Note(std::to_string(i));
     }
 }
-
 Note NoteContainer::getNote(int midiNote) {
     return notes[midiNote];
 }
@@ -35,4 +33,13 @@ int NoteContainer::getAudio() {
         }
     }
     return audio;
+}
+
+
+void NoteContainer::setName(std::string name_) {
+    name = name_;
+}
+
+std::string NoteContainer::getName() {
+    return name;
 }

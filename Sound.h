@@ -21,16 +21,20 @@ private:
     double delta;
     double readPosition;
     bool isPlaying;
+    std::string name;
+    std::string filename;
 
 public:
     Sound();
-    ~Sound();
+
     int getSample(int index);
     int getMidiNote() const;
     int getNextSample();
     int getSampleRate();
     int getMidiNote();
     int getSize();
+    std::string getName() const;
+    std::string getFilename() const;
 
     uint16_t* getData();
 
@@ -53,6 +57,9 @@ public:
     bool getIsStaccato();
 
     int getLoopPoint();
+
+    void setName(std::string name_);
+    void setFilename(std::string filename_);
 };
 
 #endif // _SOUND_H

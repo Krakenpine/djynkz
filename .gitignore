@@ -33,3 +33,6 @@
 
 # Created audio
 newWave.wav
+
+# Temporary files folder
+temp/

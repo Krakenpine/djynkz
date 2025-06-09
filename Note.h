@@ -11,6 +11,8 @@ class Note {
         bool isPlaying;
         float muteCounter;
         std::vector<Sound> sounds;
+        std::vector<int> soundOrder;
+        std::size_t soundOrderIndex;
     
     public:
         Note();

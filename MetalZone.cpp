@@ -18,7 +18,7 @@ MetalZone::MetalZone(float samplerate_) {
     lpf3.setCutOffFrequency(1003);
     lpf4.setCutOffFrequency(104);
     lpf5.setCutOffFrequency(4005);
-    lpf6.setCutOffFrequency(6006);
+    lpf6.setCutOffFrequency(7006);
 }
 
 float MetalZone::processSample(float input, float gain) {
@@ -35,7 +35,10 @@ float MetalZone::processSample(float input, float gain) {
     else { sample = sample * (27.f + sample*sample) / (27.f + sample * sample * 9.f); }
 
     sample = 0.2f * sample + 0.8f * lpf4.processSample(sample);
-    sample = sample - lpf5.processSample(sample) * 0.4f;
+    sample = 4.0f * (sample - lpf5.processSample(sample) * 0.7f);
+    if (sample < -3.f) { sample = -1.f; }
+    else if (sample > 3.f) { sample = 1.f; }
+    else { sample = sample * (27.f + sample*sample) / (27.f + sample * sample * 9.f); }
     sample = lpf6.processSample(sample);
 
     return sample;

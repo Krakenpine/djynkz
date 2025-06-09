@@ -7,7 +7,6 @@
 #include "WavReader.h"
 #include "Sound.h"
 #include "WavWriter.h"
-#include "sequence.cpp"
 #include "Note.h"
 #include "NoteContainer.h"
 #include "smplWriter.cpp"
@@ -15,6 +14,7 @@
 #include "Distortion.h"
 #include "CabinetModeler.h"
 #include "Morpher.h"
+#include "Sequencer.h"
 
 using namespace std;
 
@@ -24,6 +24,7 @@ int main(int argc, char *argv[]) {
     }
 
     const string sampleDirectory = argv[1];
+    //const string sampleDirectory = "E:\\koodaus\\djynkz\\samplet";
 
     std::cout << sampleDirectory << endl;
 
@@ -35,117 +36,193 @@ int main(int argc, char *argv[]) {
 
         smplWrite(sampleDirectory, filename, midinote, looppoint, looptype);
         return 1;
-    } 
+    }
 
     static uint16_t sampleBuffer[32000000];
 
-    vector<string> files;
-
-    for (const auto & entry : std::filesystem::directory_iterator(sampleDirectory))
-        files.push_back(entry.path().string());
-
-
     vector<Sound> allSounds;
-    
-    size_t ramIndex = 0;
-    for (size_t i = 0; i < files.size(); i++) {
-        WavReader wavReader(files[i], false);
-        std::cout << "Buffer size: " << wavReader.getBufferSize() << endl;
 
-        for (size_t i = 0; i < wavReader.getBufferSize(); i++) {
-            sampleBuffer[ramIndex + i] = wavReader.getSample(i); 
+    vector<string> directories;
+
+    vector<string> soundNames;
+
+    for (const auto& entry : std::filesystem::directory_iterator(sampleDirectory)) {
+        if (entry.is_directory()) {
+            directories.push_back(entry.path().string());
         }
-
-        Sound sound;
-        std::cout << "staccato: " << wavReader.isStaccato() << endl;
-        
-        sound.addData(&sampleBuffer[ramIndex], wavReader.getBufferSize(), wavReader.getSampleRate(), 48000, wavReader.getMidiNote(), !wavReader.isStaccato(), wavReader.getLoopPoint());
-        sound.setLoopPoint(wavReader.getLoopPoint());
-
-        allSounds.push_back(sound);
-
-        ramIndex += wavReader.getBufferSize();
     }
 
-    NoteContainer sampler;
-    NoteContainer samplerStac;
+    size_t ramIndex = 0;
+    for (const auto& dir : directories) {
+        std::cout << "Directory: " << dir << std::endl;
+        vector<string> files;
 
-    for (size_t i = 0; i < 128; i++) {
-        size_t indexOfClosestSoundNormal = 0; 
-        int closestDistanceNormal = 128;
-        size_t indexOfClosestSoundStac = 0; 
-        int closestDistanceStac = 128;
-        for (size_t j = 0; j < allSounds.size(); j++) {
-            int distance = abs(allSounds[j].getMidiNote() - (int)i);
-            if (allSounds[j].getIsStaccato()) {
-                if (distance < closestDistanceStac) {
-                    closestDistanceStac = distance;
-                    indexOfClosestSoundStac = j;
+        string soundName = dir.substr(dir.find_last_of("\\/") + 1);
+        soundNames.push_back(soundName);
+
+        for (const auto & entry : std::filesystem::directory_iterator(dir))
+            files.push_back(entry.path().string());
+        
+
+        for (size_t i = 0; i < files.size(); i++) {
+            WavReader wavReader(files[i], false);
+            std::cout << "Buffer size: " << wavReader.getBufferSize() << endl;
+
+            for (size_t i = 0; i < wavReader.getBufferSize(); i++) {
+                sampleBuffer[ramIndex + i] = wavReader.getSample(i); 
+            }
+
+            Sound sound;
+            std::cout << "staccato: " << wavReader.isStaccato() << endl;
+            
+            sound.addData(&sampleBuffer[ramIndex], wavReader.getBufferSize(), wavReader.getSampleRate(), 48000, wavReader.getMidiNote(), !wavReader.isStaccato(), wavReader.getLoopPoint());
+            sound.setLoopPoint(wavReader.getLoopPoint());
+
+            if (wavReader.isStaccato()) {
+                sound.setName(soundName + "_stac");
+            } else {
+                sound.setName(soundName);
+            }
+
+            sound.setFilename(files[i]);
+
+            allSounds.push_back(sound);
+
+            ramIndex += wavReader.getBufferSize();
+        }
+    }
+
+    vector<NoteContainer> samplers;
+
+    for (size_t i = 0; i < soundNames.size(); i++) {
+        NoteContainer samplerTemp1;
+        samplerTemp1.setName(soundNames[i]);
+        samplers.push_back(samplerTemp1);
+        NoteContainer samplerTemp2;
+        samplerTemp2.setName(soundNames[i] + "_stac");
+        samplers.push_back(samplerTemp2);
+    }
+
+    for (size_t sampler_index = 0; sampler_index < samplers.size(); sampler_index++) {
+        
+        for (int midinote = 0; midinote < 128; midinote++) {
+            vector<int> soundIndices;
+            if (samplers[sampler_index].getName().find("drum") != string::npos) { // No neighbouring notes for drums
+                for (size_t sound_index = 0; sound_index < allSounds.size(); sound_index++) {
+                    if (allSounds[sound_index].getMidiNote() == midinote &&
+                        allSounds[sound_index].getName() == samplers[sampler_index].getName()) {
+                        soundIndices.push_back(sound_index);
+                    }
                 }
             } else {
-                if (distance < closestDistanceNormal) {
-                    closestDistanceNormal = distance;
-                    indexOfClosestSoundNormal = j;
+                for (size_t sound_index = 0; sound_index < allSounds.size(); sound_index++) {
+                    if ((allSounds[sound_index].getMidiNote() == midinote || 
+                        allSounds[sound_index].getMidiNote() == midinote - 1 || 
+                        allSounds[sound_index].getMidiNote() == midinote - 2 || 
+                        allSounds[sound_index].getMidiNote() == midinote + 1 || 
+                        allSounds[sound_index].getMidiNote() == midinote + 2) &&
+                        allSounds[sound_index].getName() == samplers[sampler_index].getName()) {
+                        soundIndices.push_back(sound_index);
+                    }
                 }
             }
 
+
+            if (soundIndices.size() == 0) {
+                size_t indexOfClosestSound = 0; 
+                int closestDistance = 128;
+                for (size_t sound_index = 0; sound_index < allSounds.size(); sound_index++) {
+                    if (allSounds[sound_index].getName() == samplers[sampler_index].getName()) {
+                        int distance = abs(allSounds[sound_index].getMidiNote() - (int)midinote);
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            indexOfClosestSound = sound_index;
+                        }
+                    }
+                }
+                soundIndices.push_back(indexOfClosestSound);
+            }
+            for (size_t sound_index = 0; sound_index < soundIndices.size(); sound_index++) {
+                int index = soundIndices[sound_index];
+                std::cout << "adding sample: " << allSounds[index].getFilename() << " " << allSounds[index].getMidiNote() << " to " << samplers[sampler_index].getName() << " to note " << midinote << endl;
+                Sound cloneSound;
+                cloneSound.addData(allSounds[index].getData(), allSounds[index].getLength(), allSounds[index].getSampleRate(), 48000, allSounds[index].getMidiNote(), !allSounds[index].getIsStaccato(), allSounds[index].getLoopPoint());
+                cloneSound.setName(allSounds[index].getName());
+                cloneSound.setFilename(allSounds[index].getFilename());
+                samplers[sampler_index].addSoundToNote(midinote, cloneSound);
+            }
         }
-        std::cout << "adding norm sample: " << allSounds[indexOfClosestSoundNormal].getMidiNote() << " to: " << i << endl;
-        Sound cloneSoundNormal;
-        cloneSoundNormal.addData(allSounds[indexOfClosestSoundNormal].getData(), allSounds[indexOfClosestSoundNormal].getLength(), allSounds[indexOfClosestSoundNormal].getSampleRate(), 48000, allSounds[indexOfClosestSoundNormal].getMidiNote(), !allSounds[indexOfClosestSoundNormal].getIsStaccato(), allSounds[indexOfClosestSoundNormal].getLoopPoint());
-        sampler.addSoundToNote(i, cloneSoundNormal);
-        Sound cloneSoundStac;
-        std::cout << "adding stac sample: " << allSounds[indexOfClosestSoundStac].getMidiNote() << " to: " << i << endl;
-        cloneSoundStac.addData(allSounds[indexOfClosestSoundStac].getData(), allSounds[indexOfClosestSoundStac].getLength(), allSounds[indexOfClosestSoundStac].getSampleRate(), 48000, allSounds[indexOfClosestSoundStac].getMidiNote(), !allSounds[indexOfClosestSoundStac].getIsStaccato(), allSounds[indexOfClosestSoundNormal].getLoopPoint());
-        samplerStac.addSoundToNote(i, cloneSoundStac); 
+
+
     }
 
     // crude sequencer
     vector<float> outputSamples;
 
-    double bpm = tempo;
+    Sequencer seq;
+    seq.setMainTab("song.txt");
+
+    double bpm = seq.getTempo();
     double samplerate = 48000.0;
     double sixteenth_note_duration_seconds = 60.0 / (bpm * 4.0);
     int samples_per_sixteenth = static_cast<int>(sixteenth_note_duration_seconds * samplerate);
 
-    int sequenceIndex = 0;
     int sampleCounter = 0;
     int tick = 0;
+
+    // Distortion 
+    Distortion distortion1(samplerate, 1); 
+    distortion1.setType(METALZONE);
+    distortion1.setGain(200);
+    // Convolution
+    CabinetModeler cabinet1(samplerate); 
+    cabinet1.setType(FOURxTWELVE_SM57);
     
-    while (tick <= seqLength) {
+    while (tick <= seq.getLength()) {
         if (sampleCounter % samples_per_sixteenth == 0) {
-            if (sequence666[sequenceIndex].tick == tick) {
-                int howManySequencesThisTick = 0;
-                for (int i = 0; i < seqLength; i++) {
-                    if (sequence666[sequenceIndex + i].tick == tick) {
-                        howManySequencesThisTick++;
-                    } else { 
+            std::vector<SeqEvent> events = seq.getEventsAtTick(tick);
+
+            for (size_t i = 0; i < events.size(); i++) {
+                string eventInstrument = events[i].instrument;
+
+                if (events[i].stac) {
+                    eventInstrument += "_stac";
+                }
+
+                int samplerIndex = -1;
+
+                for (size_t j = 0; j < samplers.size(); j++) {
+                    if (samplers[j].getName() == eventInstrument) {
+                        samplerIndex = j;
                         break;
                     }
                 }
-                for (int i = 0; i < howManySequencesThisTick; i ++) {
-                    if (sequence666[sequenceIndex].playNote) {
-                        // cout << "play note" << endl; 
-                        if (sequence666[sequenceIndex].stac) {
-                            samplerStac.playNote(sequence666[sequenceIndex].note);
-                        } else {
-                            sampler.playNote(sequence666[sequenceIndex].note);
-                        }
-                    } else {
-                        if (sequence666[sequenceIndex].stac) {
-                            samplerStac.stopNote(sequence666[sequenceIndex].note);
-                        } else {
-                            sampler.stopNote(sequence666[sequenceIndex].note);
-                        } 
-                        // cout << "stop note" << endl;
-                    }
-                    sequenceIndex++;
+
+                if (events[i].playNote) {
+                    // cout << "play note" << endl;
+                    samplers[samplerIndex].playNote(events[i].note);
+                } else {
+                    // cout << "stop note" << endl;
+                    samplers[samplerIndex].stopNote(events[i].note);
                 } 
-            } 
+            }
             tick++;
         } 
-        sampleCounter++;  
-        float sample = float(sampler.getAudio()) / 32767.0f + float(samplerStac.getAudio()) / 32767.0f;
+        sampleCounter++;
+        float sample = 0.f;
+
+        for (size_t i = 0; i < samplers.size(); i++) {
+            if (samplers[i].getName() == "guitar1" || samplers[i].getName() == "guitar1_stac") {
+                sample += cabinet1.processSample(distortion1.processSample(static_cast<float>(samplers[i].getAudio())/ 32767.0f))  / static_cast<float>(samplers.size()/2);
+            }
+            if (samplers[i].getName() == "bass" || samplers[i].getName() == "bass_stac") {
+                sample += (float(samplers[i].getAudio()) / 32767.0f ) / static_cast<float>(samplers.size()/2);
+            }
+            if (samplers[i].getName() == "drums" || samplers[i].getName() == "drums_stac") {
+                sample += 2.0f * (float(samplers[i].getAudio()) / 32767.0f ) / static_cast<float>(samplers.size()/2);
+            }
+        }
+
 
         // fast tanh for soft clipping and limiting signal, crude but sounds better than over- or underflowing integer
         if (sample < -3.f) { sample = -1.f; }
@@ -163,116 +240,6 @@ int main(int argc, char *argv[]) {
 
     WavWriter writer("newWave.wav", 1, 48000, 16, outputSamplesInt, outputSamplesInt.size());
     writer.WriteFile();
-
-
-    // Distortion 
-
-    Distortion distortion(samplerate, 1); 
-    distortion.setType(METALZONE);
-    distortion.setGain(300);
-
-    vector<float> outputSamplesDist;
-
-    for (size_t i = 0; i < outputSamples.size(); i++) {
-        outputSamplesDist.push_back(distortion.processSample(outputSamples[i]));
-        
-        if (i % 48000 == 0) {
-            std::cout << "dist sample: " << i << " of " << outputSamples.size() << " processed" << endl;
-        } 
-    }
-
-    vector<int16_t> outputSamplesDistInt; 
-
-    for (size_t i = 0; i < outputSamplesDist.size(); i++) {
-        outputSamplesDistInt.push_back(static_cast<int16_t>(outputSamplesDist[i] * 32767.0f));
-    }
-
-    WavWriter writerDist("dist.wav", 1, 48000, 16, outputSamplesDistInt, outputSamplesDistInt.size());
-    writerDist.WriteFile();
-
-    // Convolution
-
-    CabinetModeler cabinet1(samplerate); 
-
-    cabinet1.setType(FOURxTWELVE_SM57);
-    
-
-    CabinetModeler cabinet2(samplerate);
-    cabinet2.setType(MOTOWN); 
-    
-
-    vector<float> outputSamplesConvolution;
-
-    Morpher morpher;
-
-    vector<float> morphtemp1;
-    vector<float> morphtemp2;
-
-    for (size_t i = 0; i < cabinet1.getIRsampleArray().size(); i++ ) {
-        float temp1 = cabinet1.getIRsampleArray()[i];
-        temp1 /= 32767.0f;
-        morphtemp1.push_back(temp1);
-    }
-
-    morpher.setMorphee(morphtemp1, 1);
-
-    for (size_t i = 0; i < cabinet2.getIRsampleArray().size(); i++ ) {
-        float temp2 = cabinet2.getIRsampleArray()[i];
-        temp2 /= 32767.0f;
-        morphtemp2.push_back(temp2);
-    }
-
-    morpher.setMorphee(morphtemp2, 2);
-
-    for (int i = 0; i < 10; i++) {
-        float weight = float(i) / 10.f;
-        morpher.calculateMorphed(weight);
-        vector<int16_t> morphInt;
-        for (size_t i = 0; i < morpher.getMorphedIR().size(); i++ ) {
-            morphInt.push_back(static_cast<int16_t>(morpher.getMorphedIR()[i] *  32767.0f));
-        }
-
-        WavWriter morphWriter("morph_" + std::to_string(i) + ".wav", 1, samplerate, 16, morphInt, morphInt.size() );
-
-        morphWriter.WriteFile(); 
-    }
-
-    CabinetModeler cabinetMorph(samplerate);
-    cabinetMorph.setType(MORPH);
-    
-    morpher.calculateMorphed(0.5);
-    cabinetMorph.resetBuffer(morpher.getMorphedIR().size());
-    cabinetMorph.setIR(morpher.getMorphedIR());
-
-
-    for (size_t i = 0; i < outputSamplesDist.size(); i++) {
-        float size = outputSamplesDist.size();
-        float weight = float(i) / size;
-
-
-        //morpher.calculateMorphed(weight);
-        //cabinetMorph.setIR(morpher.getMorphedIR());
-
-        cabinetMorph.setSpeed(1);
-        outputSamplesConvolution.push_back(cabinetMorph.processSample(outputSamplesDist[i]));
-
-
-        if (i % 48000 == 0) {
-            std::cout << "conv sample: " << i << " of " << outputSamplesDist.size() << " processed" << " weight: " << weight << endl;
-        }
-    }
-
-    std::cout << "largest sample: " << cabinet1.getLargestSample() << endl;   
-
-    vector<int16_t> outputSamplesIntConv;
-
-    for (size_t i = 0; i < outputSamplesConvolution.size(); i++) {
-        float tempsample = outputSamplesConvolution[i]*(32000.0f);
-        outputSamplesIntConv.push_back(static_cast<int16_t>(tempsample));
-    }
-
-    WavWriter IRwriter("IR.wav", 1, samplerate, 16, outputSamplesIntConv, outputSamplesIntConv.size());
-    IRwriter.WriteFile();
 
     std::cout << "It has been written!" << endl;
 

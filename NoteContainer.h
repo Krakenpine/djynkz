@@ -8,6 +8,7 @@
 class NoteContainer {
     private:
         std::vector<Note> notes;
+        std::string name;
 
     public:
         NoteContainer();
@@ -16,8 +17,10 @@ class NoteContainer {
         void addSoundToNote(int midiNote, Sound sound);
         void playNote(int midiNote);
         void stopNote(int midiNote);
+        void setName(std::string name_);
 
         int getAudio();
+        std::string getName();
 };
 
 #endif // _NOTE_CONTAINER_H

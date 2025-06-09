@@ -11,7 +11,8 @@ Distortion.cpp \
 CabinetModeler.cpp \
 MetalZone.cpp \
 FIR.cpp \
-Morpher.cpp
+Morpher.cpp \
+Sequencer.cpp
 OBJS = $(SRCS:.cpp=.o)
 TARGET = djynkz.exe
 

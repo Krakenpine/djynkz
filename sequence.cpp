@@ -1,6 +1,6 @@
 #include <vector>
 
-struct SeqEvent {
+struct SeqEvent2 {
     int tick;
     bool playNote;
     int note;
@@ -11,12 +11,16 @@ int tempo = 100;
 int seqLength = 80;
 
 
-SeqEvent sequence666[] = {
-    {0,  true,  50, false},
-    {80,  false, 50, false}
+SeqEvent2 sequence666[] = {
+    {0,  true,  33, false},
+    {0,  true,  40, false},
+    {0,  true,  45, false},
+    {80,  false, 33, false},
+    {80,  false, 40, false},
+    {80,  false, 45, false}
 };
 
-SeqEvent sequence125[] = {
+SeqEvent2 sequence125[] = {
     {0,  true,  33, false},
     {0,  true,  40, false},
     {0,  true,  45, false},
@@ -86,7 +90,7 @@ SeqEvent sequence125[] = {
     {64, false, 47, false}
 };
 
-SeqEvent sequence6[] = {
+SeqEvent2 sequence6[] = {
     {0,  true,  40, true}, // 0 x x x x x
     {1,  false, 40, true}, // x
     {2,  true,  40, true}, // 0 x x x x x
@@ -147,7 +151,7 @@ SeqEvent sequence6[] = {
     {64, false, 46, false}
 };
 
-SeqEvent sequence3[] = {
+SeqEvent2 sequence3[] = {
     {0,  true,  33, true}, // 0 x x x x x
     {1,  false, 33, true}, // x
     {2,  true,  33, true}, // 0 x x x x x

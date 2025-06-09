@@ -15,10 +15,6 @@ Sound::Sound() {
     isPlaying = false;
 }
 
-Sound::~Sound() {
-    // No dynamic memory allocation, so nothing to clean up
-}
-
 void Sound::addData(uint16_t* data_, int size, int samplerate_, int hardwareSamplerate, int midiNote_, bool loopable, int loopPoint_) {
     if (data_ == nullptr || size <= 0) {
         cerr << "Invalid data or size." << endl;
@@ -38,7 +34,7 @@ void Sound::addData(uint16_t* data_, int size, int samplerate_, int hardwareSamp
     isStaccato = !loopable;
     loopPoint = loopPoint_;
 
-    cout << midiNote << " " << initFrequency << " " << samplerate_ << " " << hardwareSamplerate << endl;
+    // cout << midiNote << " " << initFrequency << " " << samplerate_ << " " << hardwareSamplerate << endl;
 
 }
 
@@ -64,6 +60,7 @@ int Sound::getNextSample() {
     if (readPosition >= length ) {
         if (isStaccato) {
             readPosition = 0;
+            isPlaying = false;
             return 0;
         } else {
             readPosition = loopPoint + readPosition - floor(readPosition);
@@ -89,7 +86,7 @@ int Sound::getNextSample() {
 void Sound::setSemiNoteShift(int seminote) {
     playFrequency = initFrequency * pow(2.0f, seminote / 12.0f);
     delta = playFrequency / initFrequency;
-    cout << "Setting semitone shift: " << seminote << ", new frequency: " << playFrequency << ", new delta: " << delta << endl;
+    cout << name << " setting semitone shift: " << seminote << ", new frequency: " << playFrequency << ", new delta: " << delta << endl;
 }
 
 void Sound::setLoopPoint(int loopPoint_) {
@@ -137,4 +134,20 @@ bool Sound::getIsStaccato() {
 
 int Sound::getLoopPoint() {
     return loopPoint;
+}
+
+void Sound::setName(std::string name_) {
+    name = name_;
+}
+
+std::string Sound::getName() const {
+    return name;
+}
+
+std::string Sound::getFilename() const {
+    return filename;
+}
+
+void Sound::setFilename(std::string filename_) {
+    filename = filename_;
 }

@@ -1,8 +1,9 @@
 #include "Note.h"
 
-Note::Note() : name(""), currentSound(0), isPlaying(false) {};
+Note::Note() : name(""), currentSound(0), isPlaying(false), soundOrderIndex(0) {};
+
 Note::Note(std::string name_) 
-    : name(name_), currentSound(0), isPlaying(false), muteCounter(0) { };
+    : name(name_), currentSound(0), isPlaying(false), muteCounter(0), soundOrderIndex(0) {};
 
 Sound Note::getSound(int index) {
     return sounds[index];
@@ -13,13 +14,29 @@ void Note::addSound(Sound sound) {
 }
 
 void Note::playSound(int midiNote) {
-    muteCounter = 0;
-    currentSound++;
-    if (currentSound >= sounds.size()) {
-        currentSound = 0;
+
+    if (soundOrderIndex >= soundOrder.size() || soundOrder.size() == 0) {
+        soundOrderIndex = 0;
+        soundOrder.clear();
+        std::vector<int> tempOrder;
+        for (size_t i = 0; i < sounds.size(); i++) {
+            tempOrder.push_back(i);
+        }
+
+        while(tempOrder.size() > 0) {
+            int randomIndex = rand() % tempOrder.size();
+            soundOrder.push_back(tempOrder[randomIndex]);
+            tempOrder.erase(tempOrder.begin() + randomIndex);
+        }
     }
+    currentSound = soundOrder[soundOrderIndex];
+
+    muteCounter = 0;
+
     sounds[currentSound].startNoteMidiNote(midiNote);
     isPlaying = true;
+
+    soundOrderIndex++;
 }
 
 int Note::getNextSample() {
